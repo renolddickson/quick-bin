@@ -58,7 +58,7 @@ const handleShare = async () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ targetUrl })
+        body: JSON.stringify({ targetUrl, expireDate: '1w' })
       });
 
       // Step 4: Handle response
