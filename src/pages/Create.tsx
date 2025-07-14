@@ -7,6 +7,7 @@ import { EditableFileName } from "../components/EditableFileName";
 import { X } from "lucide-react";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
 import { compressTextBrotli } from "../utils";
+import axios from 'axios';
 
 export default function Create() {
     const [files, setFiles] = useState<DataType[]>([]);
@@ -43,45 +44,48 @@ export default function Create() {
         setFiles(updated);
         setActiveIndex((prev) => (prev >= updated.length ? updated.length - 1 : prev));
     };
-const handleShare = async () => {
-  if (!files.length || !files.some(item => item.content)) return;
+    const handleShare = async () => {
+        if (!files.length || !files.some(item => item.content)) return;
+      
+        setShareLoading(true);
+      
+        try {
+          const json = JSON.stringify(files);
+          const encoded = encodeURIComponent(compressTextBrotli(json));
+      
+          const targetUrl = `${import.meta.env.VITE_BASE_URL}#/${encoded}`;
+          const apiUrl = `${import.meta.env.VITE_SHORT_LINK}api`;
+      
+          const response = await axios.post(
+            apiUrl,
+            {
+              targetUrl,
+              expireDate: '1week',
+              title: 'quickbin',
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+      
+          const resData = response.data;
+      
+          if (resData?.shortUrl) {
+            setShareLink(resData.shortUrl);
+            setIsShareDialogOpen(true);
+          } else {
+            console.error("Invalid response structure:", resData);
+          }
+      
+        } catch (err) {
+          console.error("Failed to generate share link:", err);
+        } finally {
+          setShareLoading(false);
+        }
+    };
 
-  setShareLoading(true);
-
-  try {
-    const json = JSON.stringify(files);
-    const encoded = encodeURIComponent(compressTextBrotli(json));
-
-    const targetUrl = `${import.meta.env.VITE_BASE_URL}#/${encoded}`;
-          const response = await fetch(`${import.meta.env.VITE_SHORT_LINK}api`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ targetUrl, expireDate: '1week' })
-      });
-
-      // Step 4: Handle response
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const {data} = await response.json();
-
-      if (data) {
-        const shortLink = `${import.meta.env.VITE_SHORT_LINK}${data}`;
-        setShareLink(shortLink);
-        setIsShareDialogOpen(true);
-      } else {
-        console.error("Invalid response from shortener API:", data);
-      }
-
-    } catch (err) {
-      console.error("Failed to generate share link:", err);
-    } finally {
-      setShareLoading(false);
-    }
-};
     return (
         <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
             {/* Navigation Tabs */}
