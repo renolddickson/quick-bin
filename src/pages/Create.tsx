@@ -7,7 +7,6 @@ import { EditableFileName } from "../components/EditableFileName";
 import { X } from "lucide-react";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
 import { compressTextBrotli } from "../utils";
-import axios from 'axios';
 
 export default function Create() {
     const [files, setFiles] = useState<DataType[]>([]);
@@ -56,22 +55,21 @@ export default function Create() {
           const targetUrl = `${import.meta.env.VITE_BASE_URL}#/${encoded}`;
           const apiUrl = `${import.meta.env.VITE_SHORT_LINK}api`;
       
-          const response = await axios.post(
-            apiUrl,
-            {
-              targetUrl,
-              expireDate: '1week',
-              title: 'quickbin',
-            },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }
-          );
+        const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            targetUrl,
+            expireDate: '1week',
+            title: 'quickbin',
+        }),
+        });
       
-          const resData = response.data;
-      
+          const resData = await response.json();
+        console.log(resData);
+        
           if (resData?.shortUrl) {
             setShareLink(resData.shortUrl);
             setIsShareDialogOpen(true);

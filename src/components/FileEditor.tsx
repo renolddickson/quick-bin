@@ -72,7 +72,7 @@ const { isDark } = useTheme();
           </div>
         ) : (
           <textarea
-            className="w-full h-full m-h-[450px] p-4 resize-none text-gray-900 dark:text-gray-100 
+            className="w-full h-full min-h-[450px] p-4 resize-none text-gray-900 dark:text-gray-100 
                        bg-transparent focus:outline-none border-none"
             value={data.content}
             onChange={(e) => onChange({ ...data, content: e.target.value })}
