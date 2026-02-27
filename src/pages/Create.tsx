@@ -68,7 +68,6 @@ export default function Create() {
         });
       
           const resData = await response.json();
-        console.log(resData);
         
           if (resData?.shortUrl) {
             setShareLink(resData.shortUrl);
