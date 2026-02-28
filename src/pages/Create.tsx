@@ -105,7 +105,6 @@ export default function Create() {
         });
       
           const resData = await response.json();
-        console.log("Full response from Sluggy:", resData);
         
           if (resData?.shortUrl) {
             setShareLink(resData.shortUrl);
