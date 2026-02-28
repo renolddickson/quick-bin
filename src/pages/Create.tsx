@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { DataType } from "../models";
 import ThemeToggle from "../components/ThemeToggler";
 import ShareButton from "../components/ShareButton";
 import { FileEditor } from "../components/FileEditor";
 import { EditableFileName } from "../components/EditableFileName";
-import { X } from "lucide-react";
+import { X, LayoutDashboard, LogIn } from "lucide-react";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
+import { NewFeatureDialog } from "../components/NewFeatureDialog";
 import { compressTextBrotli } from "../utils";
+import { loginWithSluggy, getAuthToken } from "../utils/auth";
 
 export default function Create() {
     const [files, setFiles] = useState<DataType[]>([]);
@@ -14,6 +16,19 @@ export default function Create() {
     const [shareLink, setShareLink] = useState('');
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareLoading, setShareLoading] = useState(false)
+    const [isNewFeatureDialogOpen, setIsNewFeatureDialogOpen] = useState(false);
+
+    useEffect(() => {
+        const hasSeenFeature = localStorage.getItem('hasSeenAuthFeature');
+        if (!hasSeenFeature) {
+            setIsNewFeatureDialogOpen(true);
+        }
+    }, []);
+
+    const closeNewFeatureDialog = () => {
+        setIsNewFeatureDialogOpen(false);
+        localStorage.setItem('hasSeenAuthFeature', 'true');
+    };
 
     const addNewFile = () => {
         if (files.length >= 5) return;
@@ -43,6 +58,22 @@ export default function Create() {
         setFiles(updated);
         setActiveIndex((prev) => (prev >= updated.length ? updated.length - 1 : prev));
     };
+    const [isLoggedIn, setIsLoggedIn] = useState(!!getAuthToken());
+
+    const handleLogin = async () => {
+        try {
+            await loginWithSluggy();
+            setIsLoggedIn(true);
+        } catch (err) {
+            console.error("Login failed:", err);
+        }
+    };
+
+    const handleViewDashboard = () => {
+        const dashboardUrl = import.meta.env.VITE_SHORT_LINK + 'dashboard';
+        window.open(dashboardUrl, '_blank');
+    };
+
     const handleShare = async () => {
         if (!files.length || !files.some(item => item.content)) return;
       
@@ -54,12 +85,18 @@ export default function Create() {
       
           const targetUrl = `${import.meta.env.VITE_BASE_URL}#/${encoded}`;
           const apiUrl = `${import.meta.env.VITE_SHORT_LINK}api`;
+          
+          const token = getAuthToken();
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+          };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
       
         const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
             targetUrl,
             expireDate: '1week',
@@ -68,7 +105,7 @@ export default function Create() {
         });
       
           const resData = await response.json();
-        console.log(resData);
+        console.log("Full response from Sluggy:", resData);
         
           if (resData?.shortUrl) {
             setShareLink(resData.shortUrl);
@@ -137,6 +174,27 @@ export default function Create() {
 
                 {/* Header Actions */}
                 <div className="flex items-center gap-2 px-4">
+                    {isLoggedIn ? (
+                        <button
+                            onClick={handleViewDashboard}
+                            className="h-10 px-4 flex items-center gap-2 text-sm font-medium 
+                                     text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 
+                                     border border-gray-200 dark:border-gray-700 
+                                     hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        >
+                            <LayoutDashboard size={16} />
+                            Dashboard
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleLogin}
+                            className="h-10 px-4 flex items-center gap-2 text-sm font-medium 
+                                     text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                        >
+                            <LogIn size={16} />
+                            Login
+                        </button>
+                    )}
                     <ThemeToggle />
                     <ShareButton data={files} onShareClick={() => handleShare()} isLoading={shareLoading} />
                 </div>
@@ -176,6 +234,10 @@ export default function Create() {
                 isOpen={isShareDialogOpen}
                 onClose={() => setIsShareDialogOpen(false)}
                 link={shareLink}
+            />
+            <NewFeatureDialog
+                isOpen={isNewFeatureDialogOpen}
+                onClose={closeNewFeatureDialog}
             />
         </div>
     );
