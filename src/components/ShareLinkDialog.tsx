@@ -5,11 +5,13 @@ import { Dialog } from "./Dialog";
 export const ShareLinkDialog = ({ 
   isOpen, 
   onClose, 
-  link 
+  link,
+  isAuthenticated
 }: { 
   isOpen: boolean; 
   onClose: () => void; 
   link: string;
+  isAuthenticated?: boolean;
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -57,9 +59,11 @@ export const ShareLinkDialog = ({
     </div>
 
     {/* Warning text */}
-    <p className="text-left text-xs text-gray-500 dark:text-gray-400 mb-6">
-      ⚠️ This link is temporary and will <span className="font-medium">expire in 1 week</span>.
-    </p>
+    {!isAuthenticated && (
+      <p className="text-left text-xs text-gray-500 dark:text-gray-400 mb-6">
+        ⚠️ This link is temporary and will <span className="font-medium">expire in 1 week</span>.
+      </p>
+    )}
 
     {/* Powered by Sluggy */}
     <p className="text-sm">

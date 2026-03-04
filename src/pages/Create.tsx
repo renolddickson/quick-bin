@@ -107,7 +107,7 @@ export default function Create() {
         headers,
         body: JSON.stringify({
             targetUrl,
-            expireDate: '1week',
+            expireDate: token ? null : '1week',
             title: 'quickbin',
         }),
         });
@@ -282,6 +282,7 @@ export default function Create() {
                 isOpen={isShareDialogOpen}
                 onClose={() => setIsShareDialogOpen(false)}
                 link={shareLink}
+                isAuthenticated={isLoggedIn}
             />
             <NewFeatureDialog
                 isOpen={isNewFeatureDialogOpen}
