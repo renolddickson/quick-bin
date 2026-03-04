@@ -4,11 +4,11 @@ import ThemeToggle from "../components/ThemeToggler";
 import ShareButton from "../components/ShareButton";
 import { FileEditor } from "../components/FileEditor";
 import { EditableFileName } from "../components/EditableFileName";
-import { X, LayoutDashboard, LogIn } from "lucide-react";
+import { X, LayoutDashboard, LogIn, User, LogOut, ChevronDown } from "lucide-react";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
 import { NewFeatureDialog } from "../components/NewFeatureDialog";
 import { compressTextBrotli } from "../utils";
-import { loginWithSluggy, getAuthToken } from "../utils/auth";
+import { loginWithSluggy, getAuthToken, removeAuthToken } from "../utils/auth";
 
 export default function Create() {
     const [files, setFiles] = useState<DataType[]>([]);
@@ -17,9 +17,10 @@ export default function Create() {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareLoading, setShareLoading] = useState(false)
     const [isNewFeatureDialogOpen, setIsNewFeatureDialogOpen] = useState(false);
+    const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
     useEffect(() => {
-        const hasSeenFeature = localStorage.getItem('hasSeenAuthFeature');
+        const hasSeenFeature = localStorage.getItem('hasSeenAuthFeatureV2');
         if (!hasSeenFeature) {
             setIsNewFeatureDialogOpen(true);
         }
@@ -27,7 +28,7 @@ export default function Create() {
 
     const closeNewFeatureDialog = () => {
         setIsNewFeatureDialogOpen(false);
-        localStorage.setItem('hasSeenAuthFeature', 'true');
+        localStorage.setItem('hasSeenAuthFeatureV2', 'true');
     };
 
     const addNewFile = () => {
@@ -69,9 +70,16 @@ export default function Create() {
         }
     };
 
+    const handleLogout = () => {
+        removeAuthToken();
+        setIsLoggedIn(false);
+        setIsAccountMenuOpen(false);
+    };
+
     const handleViewDashboard = () => {
         const dashboardUrl = import.meta.env.VITE_SHORT_LINK + 'dashboard';
         window.open(dashboardUrl, '_blank');
+        setIsAccountMenuOpen(false);
     };
 
     const handleShare = async () => {
@@ -172,28 +180,69 @@ export default function Create() {
                 </div>
 
                 {/* Header Actions */}
-                <div className="flex items-center gap-2 px-4">
+                <div className="flex items-center gap-3 px-4">
                     {isLoggedIn ? (
-                        <button
-                            onClick={handleViewDashboard}
-                            className="h-10 px-4 flex items-center gap-2 text-sm font-medium 
-                                     text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 
-                                     border border-gray-200 dark:border-gray-700 
-                                     hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                            <LayoutDashboard size={16} />
-                            Dashboard
-                        </button>
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                                className="flex items-center gap-2 h-9 px-3 rounded-lg
+                                         text-gray-700 dark:text-gray-200 
+                                         hover:bg-gray-100 dark:hover:bg-gray-700 
+                                         transition-all border border-transparent
+                                         hover:border-gray-200 dark:hover:border-gray-600"
+                            >
+                                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/40 
+                                              flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                    <User size={14} />
+                                </div>
+                                <ChevronDown size={14} className={`transition-transform duration-200 ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {isAccountMenuOpen && (
+                                <>
+                                    <div 
+                                        className="fixed inset-0 z-10" 
+                                        onClick={() => setIsAccountMenuOpen(false)}
+                                    />
+                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 
+                                                  shadow-xl border border-gray-100 dark:border-gray-700 
+                                                  py-1.5 z-20 animate-in fade-in zoom-in duration-100">
+                                        <button
+                                            onClick={handleViewDashboard}
+                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm
+                                                     text-gray-700 dark:text-gray-300 hover:bg-gray-50 
+                                                     dark:hover:bg-gray-700/50 transition-colors"
+                                        >
+                                            <LayoutDashboard size={14} className="text-gray-400" />
+                                            Dashboard
+                                        </button>
+                                        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm
+                                                     text-red-600 dark:text-red-400 hover:bg-red-50 
+                                                     dark:hover:bg-red-900/10 transition-colors"
+                                        >
+                                            <LogOut size={14} />
+                                            Exit
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     ) : (
                         <button
                             onClick={handleLogin}
-                            className="h-10 px-4 flex items-center gap-2 text-sm font-medium 
-                                     text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                            className="h-9 px-4 flex items-center gap-2 text-sm font-medium 
+                                     text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 
+                                     hover:bg-blue-100 dark:hover:bg-blue-900/40 
+                                     transition-all active:scale-95"
                         >
-                            <LogIn size={16} />
-                            Login
+                            <LogIn size={15} />
+                            Sign in
                         </button>
                     )}
+                    <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
                     <ThemeToggle />
                     <ShareButton data={files} onShareClick={() => handleShare()} isLoading={shareLoading} />
                 </div>
@@ -220,7 +269,7 @@ export default function Create() {
                                 Create a new file to get started
                             </p>
                             <button
-                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors shadow-sm active:scale-95"
                                 onClick={addNewFile}
                             >
                                 Create New File
@@ -237,6 +286,7 @@ export default function Create() {
             <NewFeatureDialog
                 isOpen={isNewFeatureDialogOpen}
                 onClose={closeNewFeatureDialog}
+                onConnect={handleLogin}
             />
         </div>
     );

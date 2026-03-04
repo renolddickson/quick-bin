@@ -39,7 +39,7 @@ export const Dialog = ({
       
       {/* Dialog Content */}
       <div className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 
-                      shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                      shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
