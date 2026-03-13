@@ -5,6 +5,7 @@ import ShareButton from "../components/ShareButton";
 import { FileEditor } from "../components/FileEditor";
 import { EditableFileName } from "../components/EditableFileName";
 import { X, LayoutDashboard, LogIn, User, LogOut, ChevronDown } from "lucide-react";
+import { Dialog } from "../components/Dialog";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
 import { NewFeatureDialog } from "../components/NewFeatureDialog";
 import { compressTextBrotli } from "../utils";
@@ -18,6 +19,12 @@ export default function Create() {
     const [shareLoading, setShareLoading] = useState(false)
     const [isNewFeatureDialogOpen, setIsNewFeatureDialogOpen] = useState(false);
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+    const [isTitleDialogOpen, setIsTitleDialogOpen] = useState(false);
+    const [linkTitle, setLinkTitle] = useState('');
+    const [askForTitle, setAskForTitle] = useState(() => {
+        const saved = localStorage.getItem('askForTitle');
+        return saved !== 'false';
+    });
 
     useEffect(() => {
         const hasSeenFeature = localStorage.getItem('hasSeenAuthFeatureV2');
@@ -82,7 +89,18 @@ export default function Create() {
         setIsAccountMenuOpen(false);
     };
 
-    const handleShare = async () => {
+    const initiateShare = () => {
+
+        if (!files.length || !files.some(item => item.content)) return;
+
+        if (isLoggedIn && askForTitle) {
+            setIsTitleDialogOpen(true);
+        } else {
+            handleShare('quickbin');
+        }
+    };
+
+    const handleShare = async (title: string = 'quickbin') => {
         if (!files.length || !files.some(item => item.content)) return;
       
         setShareLoading(true);
@@ -108,7 +126,7 @@ export default function Create() {
         body: JSON.stringify({
             targetUrl,
             expireDate: token ? null : '1week',
-            title: 'quickbin',
+            title,
         }),
         });
       
@@ -244,7 +262,7 @@ export default function Create() {
                     )}
                     <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
                     <ThemeToggle />
-                    <ShareButton data={files} onShareClick={() => handleShare()} isLoading={shareLoading} />
+                    <ShareButton data={files} onShareClick={initiateShare} isLoading={shareLoading} />
                 </div>
             </div>
 
@@ -278,6 +296,49 @@ export default function Create() {
                     </div>
                 )}
             </div>
+            <Dialog isOpen={isTitleDialogOpen} onClose={() => setIsTitleDialogOpen(false)}>
+                <div className="py-2 min-w-[300px]">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Set Link Title</h2>
+                    <input 
+                        type="text" 
+                        placeholder="quickbin" 
+                        value={linkTitle} 
+                        onChange={(e) => setLinkTitle(e.target.value)}
+                        className="w-full p-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all mb-4"
+                    />
+                    <label className="flex items-center gap-2 mb-6 cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            checked={!askForTitle} 
+                            onChange={(e) => {
+                                const newAsk = !e.target.checked;
+                                setAskForTitle(newAsk);
+                                localStorage.setItem('askForTitle', newAsk.toString());
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Don't ask title popup again</span>
+                    </label>
+                    <div className="flex gap-2 justify-end">
+                        <button 
+                            onClick={() => setIsTitleDialogOpen(false)}
+                            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium text-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setIsTitleDialogOpen(false);
+                                handleShare(linkTitle || 'quickbin');
+                                setLinkTitle('');
+                            }}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors"
+                        >
+                            Generate Link
+                        </button>
+                    </div>
+                </div>
+            </Dialog>
             <ShareLinkDialog
                 isOpen={isShareDialogOpen}
                 onClose={() => setIsShareDialogOpen(false)}
