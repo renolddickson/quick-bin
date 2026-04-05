@@ -14,7 +14,8 @@ export const EditableFileName = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(fileName);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const longPressTimer = useRef<any | null>(null);
 
   const startLongPress = () => {
     longPressTimer.current = setTimeout(() => {

@@ -4,7 +4,7 @@ import ThemeToggle from "../components/ThemeToggler";
 import ShareButton from "../components/ShareButton";
 import { FileEditor } from "../components/FileEditor";
 import { EditableFileName } from "../components/EditableFileName";
-import { X, LayoutDashboard, LogIn, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
+import { X, LayoutDashboard, LogIn, User, LogOut, ExternalLink } from "lucide-react";
 import { Dialog } from "../components/Dialog";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
 import { NewFeatureDialog } from "../components/NewFeatureDialog";
