@@ -4,7 +4,7 @@ import ThemeToggle from "../components/ThemeToggler";
 import ShareButton from "../components/ShareButton";
 import { FileEditor } from "../components/FileEditor";
 import { EditableFileName } from "../components/EditableFileName";
-import { X, LayoutDashboard, LogIn, User, LogOut, ChevronDown } from "lucide-react";
+import { X, LayoutDashboard, LogIn, User, LogOut, ChevronDown, ExternalLink } from "lucide-react";
 import { Dialog } from "../components/Dialog";
 import { ShareLinkDialog } from "../components/ShareLinkDialog";
 import { NewFeatureDialog } from "../components/NewFeatureDialog";
@@ -150,15 +150,15 @@ export default function Create() {
         <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
             {/* Navigation Tabs */}
             <div className="flex items-center justify-between bg-white dark:bg-gray-800 
-                      border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center overflow-x-auto">
+                      border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+                <div className="flex-1 flex items-center min-w-0 overflow-hidden">
                     {/* Tab Navigation */}
-                    <div className="flex overflow-x-auto whitespace-nowrap">
+                    <div className="flex overflow-x-auto whitespace-nowrap no-scrollbar select-none">
                         {files.map((file, i) => (
                             <div
                                 key={i}
-                                className={`flex items-center gap-2 px-4 py-3 border-r border-gray-200 dark:border-gray-700 
-                           cursor-pointer transition-colors min-w-32 ${i === activeIndex
+                                className={`flex items-center gap-2 px-3 sm:px-4 py-3 border-r border-gray-200 dark:border-gray-700 
+                           cursor-pointer transition-colors min-w-[100px] sm:min-w-[128px] ${i === activeIndex
                                         ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                     }`}
@@ -188,32 +188,29 @@ export default function Create() {
                         {files.length < 5 && (
                             <button
                                 className="px-4 py-3 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 
-                           border-r border-gray-200 dark:border-gray-700 transition-colors font-medium"
+                           border-r border-gray-200 dark:border-gray-700 transition-colors font-medium flex items-center gap-1"
                                 onClick={addNewFile}
                             >
-                                + New File
+                                <span className="text-lg">+</span>
+                                <span className="hidden sm:inline">New File</span>
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* Header Actions */}
-                <div className="flex items-center gap-3 px-4">
+                <div className="flex items-center gap-1 sm:gap-3 px-2 sm:px-4 shrink-0">
                     {isLoggedIn ? (
                         <div className="relative">
                             <button
                                 onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                                className="flex items-center gap-2 h-9 px-3 rounded-lg
-                                         text-gray-700 dark:text-gray-200 
-                                         hover:bg-gray-100 dark:hover:bg-gray-700 
-                                         transition-all border border-transparent
-                                         hover:border-gray-200 dark:hover:border-gray-600"
+                                className="flex items-center gap-2 group p-1 rounded-full 
+                                         transition-all border border-transparent"
                             >
-                                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/40 
-                                              flex items-center justify-center text-blue-600 dark:text-blue-400">
-                                    <User size={14} />
+                                <div className="w-8 h-8 rounded-full bg-blue-400
+                                              flex items-center justify-center text-white shadow-sm ring-2 ring-transparent group-hover:ring-blue-500/20 transition-all">
+                                    <User size={16} strokeWidth={2.5} />
                                 </div>
-                                <ChevronDown size={14} className={`transition-transform duration-200 ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isAccountMenuOpen && (
@@ -222,27 +219,30 @@ export default function Create() {
                                         className="fixed inset-0 z-10" 
                                         onClick={() => setIsAccountMenuOpen(false)}
                                     />
-                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 
+                                    <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 
                                                   shadow-xl border border-gray-100 dark:border-gray-700 
                                                   py-1.5 z-20 animate-in fade-in zoom-in duration-100">
                                         <button
                                             onClick={handleViewDashboard}
-                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm
+                                            className="w-full flex items-center justify-between px-4 py-2.5 text-sm
                                                      text-gray-700 dark:text-gray-300 hover:bg-gray-50 
                                                      dark:hover:bg-gray-700/50 transition-colors"
                                         >
-                                            <LayoutDashboard size={14} className="text-gray-400" />
-                                            Dashboard
+                                            <div className="flex items-center gap-3">
+                                                <LayoutDashboard size={16} className="text-gray-400" />
+                                                Dashboard
+                                            </div>
+                                            <ExternalLink size={12} className="text-gray-400" />
                                         </button>
-                                        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
+                                        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
                                         <button
                                             onClick={handleLogout}
-                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                      text-red-600 dark:text-red-400 hover:bg-red-50 
                                                      dark:hover:bg-red-900/10 transition-colors"
                                         >
-                                            <LogOut size={14} />
-                                            Exit
+                                            <LogOut size={16} />
+                                            Logout
                                         </button>
                                     </div>
                                 </>

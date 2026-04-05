@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { languageOptions } from "../constants";
 
 export const EditableFileName = ({
@@ -14,6 +14,20 @@ export const EditableFileName = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(fileName);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const startLongPress = () => {
+    longPressTimer.current = setTimeout(() => {
+      setIsEditing(true);
+      setTempName(fileName);
+    }, 600); // 600ms for long press
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -55,13 +69,23 @@ export const EditableFileName = ({
     );
   }
 
+  const getExtension = () => {
+    if (fileType === 'text') return 'txt';
+    if (language?.startsWith('custom:')) return language.split(':')[1] || 'txt';
+    const found = languageOptions.find(lang => lang.label === language);
+    return found?.extension || 'txt';
+  };
+
   return (
     <span
       onDoubleClick={handleDoubleClick}
-      className="text-sm font-medium cursor-pointer select-none"
-      title="Double-click to rename"
+      onTouchStart={startLongPress}
+      onTouchEnd={cancelLongPress}
+      onTouchMove={cancelLongPress}
+      className={`text-sm font-medium cursor-pointer select-none transition-all active:scale-95 active:opacity-70`}
+      title="Double-click or long-press to rename"
     >
-      {`${fileName ?? 'untitled'}.${fileType == 'text'?'txt':languageOptions.find(lang=>lang.label == language)?.extension || 'txt'}`}
+      {`${fileName || 'untitled'}.${getExtension()}`}
     </span>
   );
 };

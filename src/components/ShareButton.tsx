@@ -21,7 +21,7 @@ const ShareButton = ({
       {!isLoading ? (
         <Share2 size={18} />
       ) : (
-        <div className="animate-spin h-4 w-4 border-2 border-t-transparent border-gray-500 rounded-full"></div>
+        <div className="animate-spin h-4 w-4 border-2 border-t-transparent border-white rounded-full"></div>
       )}
     </button>
   );
